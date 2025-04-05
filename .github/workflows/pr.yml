@@ -31,7 +31,7 @@ jobs:
           # Scan the built image and output JSON report
           trivy image --ignore-unfixed --format json --output trivy-report.json ghcr.io/goofyy/research-image:child-old-packages
       - name: Upload Trivy Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: trivy-report
           path: trivy-report.json
