@@ -48,32 +48,6 @@ jobs:
           format: json
           output: trivy-report.json
           ignore-unfixed: true
-      - name: Display Trivy Results in Summary
-        run: |
-              # Check if report exists and has content
-              if [ -s trivy-report.json ]; then
-                # Use jq to extract and format vulnerabilities into Markdown
-                echo "# Trivy Scan Results" >> $GITHUB_STEP_SUMMARY
-                echo "Scanned image: \`ghcr.io/goofyy/research-image:child-old-packages\`" >> $GITHUB_STEP_SUMMARY
-                echo "" >> $GITHUB_STEP_SUMMARY
-                
-                # Count vulnerabilities
-                vuln_count=$(jq '.[] | select(.Vulnerabilities != null) | .Vulnerabilities | length' trivy-report.json | awk '{s+=$1} END {print s}')
-                if [ "$vuln_count" -eq 0 ]; then
-                  echo "✅ No vulnerabilities found." >> $GITHUB_STEP_SUMMARY
-                else
-                  echo "⚠️ Found $vuln_count vulnerabilities:" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Package | Vulnerability | Severity | Installed Version | Fixed Version |" >> $GITHUB_STEP_SUMMARY
-                  echo "|---------|---------------|----------|-------------------|---------------|" >> $GITHUB_STEP_SUMMARY
-                  
-                  # Extract and append each vulnerability
-                  jq -r '.[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | "| \(.PkgName) | \(.VulnerabilityID) | \(.Severity) | \(.InstalledVersion) | \(.FixedVersion // "N/A") |"' trivy-report.json >> $GITHUB_STEP_SUMMARY
-                fi
-              else
-                echo "# Trivy Scan Results" >> $GITHUB_STEP_SUMMARY
-                echo "❌ Trivy report not generated or empty." >> $GITHUB_STEP_SUMMARY
-              fi
       - name: Upload Trivy Report
         uses: actions/upload-artifact@v4
         with:
