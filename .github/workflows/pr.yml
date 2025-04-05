@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -69,10 +69,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Trivy report
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: trivy-report
 
@@ -81,7 +81,7 @@ jobs:
           python3 scripts/analyze_vulnerabilities.py trivy-report.json
 
       - name: Upload remediation plan
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: remediation-plan
           path: remediation_plan.json
@@ -97,7 +97,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Download remediation plan
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: remediation-plan
 
