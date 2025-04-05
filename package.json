@@ -2,13 +2,13 @@
   "name": "vuln-demo",
   "version": "1.0.0",
   "dependencies": {
-    "lodash": "4.17.10",
-    "jquery": "3.3.1",
-    "serialize-javascript": "1.6.1",
+    "lodash": "4.17.21",
+    "jquery": "3.5.0",
+    "serialize-javascript": "3.1.0",
     "debug": "2.6.9",
-    "moment": "2.18.1",
-    "axios": "0.19.0",
-    "tar": "2.2.1",
+    "moment": "2.29.4",
+    "axios": "1.8.2, 0.30.0",
+    "tar": "6.2.1",
     "hoek": "4.2.1"
   }
 }
