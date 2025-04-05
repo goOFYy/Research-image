@@ -30,8 +30,10 @@ jobs:
         run: |
           # Scan the built image and output JSON report
           trivy image --ignore-unfixed --format json --output trivy-report.json ghcr.io/goofyy/research-image:child-old-packages
+          # Verify the file exists
+          if [ -f trivy-report.json ]; then echo "Report generated"; else echo "Report missing"; exit 1; fi
       - name: Upload Trivy Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: trivy-report
           path: trivy-report.json
