@@ -1,10 +1,18 @@
 FROM ghcr.io/goofyy/research-base-image:base-1
 
+# Set working directory
+WORKDIR /app
+
+# Copy package.json to the image
+COPY package.json .
+
+# Install Node.js and npm
 RUN apt-get update && \
-    apt-get install -y wget && \
-    wget http://archive.ubuntu.com/ubuntu/pool/main/c/curl/curl_7.68.0-1ubuntu2.6_amd64.deb && \
-    wget http://archive.ubuntu.com/ubuntu/pool/main/v/vim/vim_8.1.2269-1ubuntu5_amd64.deb && \
-    dpkg -i curl_7.68.0-1ubuntu2.6_amd64.deb vim_8.1.2269-1ubuntu5_amd64.deb || apt-get install -f -y && \
-    rm -f curl_7.68.0-1ubuntu2.6_amd64.deb vim_8.1.2269-1ubuntu5_amd64.deb && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Install Node.js dependencies
+RUN npm install
