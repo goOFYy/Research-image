@@ -27,7 +27,7 @@ jobs:
     needs: build
     steps:
       - name: Scan Docker Image with Trivy
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: ghcr.io/goofyy/research-image:child-old-packages
           format: json
