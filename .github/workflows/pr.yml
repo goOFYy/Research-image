@@ -33,6 +33,15 @@ jobs:
           format: json
           output: trivy-report.json
           ignore-unfixed: true
+      - name: Check Trivy Report
+        run: |
+          if [ -f trivy-report.json ]; then
+            echo "Trivy report generated successfully"
+            ls -lh trivy-report.json
+          else
+            echo "Trivy report missing"
+            exit 1
+          fi
       - name: Upload Trivy Report
         uses: actions/upload-artifact@v4
         with:
