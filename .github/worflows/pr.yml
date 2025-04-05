@@ -1,0 +1,110 @@
+name: Automated Security Remediation on PR
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          # Build your image; adjust the Dockerfile path if needed.
+          docker build -t ghcr.io/goofyy/research-image:child-old-packages .
+
+  scan:
+    name: Scan Image for Vulnerabilities
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Scan Docker Image with Trivy
+        run: |
+          # Scan the built image and output JSON report
+          trivy image --ignore-unfixed --format json --output trivy-report.json ghcr.io/goofyy/research-image:child-old-packages
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-report
+          path: trivy-report.json
+
+  analyze:
+    name: Analyze vulnerabilities
+    needs: scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download Trivy report
+        uses: actions/download-artifact@v3
+        with:
+          name: trivy-report
+
+      - name: Run analysis script
+        run: |
+          python3 scripts/analyze_vulnerabilities.py trivy-report.json
+
+      - name: Upload remediation plan
+        uses: actions/upload-artifact@v3
+        with:
+          name: remediation-plan
+          path: remediation_plan.json
+
+  remediate:
+    name: Apply remediation
+    needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Download remediation plan
+        uses: actions/download-artifact@v3
+        with:
+          name: remediation-plan
+
+      - name: Set GHCR_TOKEN from PAT secret
+        run: echo "GHCR_TOKEN=${{ secrets.PAT }}" >> $GITHUB_ENV
+
+      - name: Install Python deps
+        run: pip install requests
+
+      - name: Run remediation script
+        id: remediate
+        run: |
+          # run script and capture its output
+          output=$(python3 scripts/remediate.py remediation_plan.json)
+          echo "::set-output name=changes::${output}"
+
+      - name: Commit remediation changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Dockerfile package.json
+          git commit -m "chore: apply automated security remediation" || echo "No changes to commit"
+
+      - name: Push fixes back to PR branch
+        run: |
+          git push origin HEAD:${{ github.head_ref }}
+
+      - name: Comment on PR with remediation summary
+        uses: actions/github-script@v7
+        if: steps.remediate.outputs.changes != ''
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const changes = `\`\`\`\n${{ steps.remediate.outputs.changes }}\n\`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🔧 **Automated Remediation Applied**\n\nThe following changes were made:\n${changes}`
+            });
