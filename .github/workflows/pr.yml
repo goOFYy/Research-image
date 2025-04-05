@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Log in to GHCR
+        run: echo "${{ secrets.PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+   
       - name: Scan Docker Image with Trivy
         uses: aquasecurity/trivy-action@0.30.0
         with:
