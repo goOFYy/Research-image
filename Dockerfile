@@ -1,4 +1,4 @@
-FROM ghcr.io/goofyy/research-base-image:base-1
+FROM ghcr.io/goofyy/research-base-image:base-2
 
 # Set working directory
 WORKDIR /app
